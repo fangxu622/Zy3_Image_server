@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>资源三号一版图服务</title>
+    <link rel="stylesheet" type="text/css" href="http://localhost/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dijit/themes/tundra/tundra.css"/>
+    <link rel="stylesheet" type="text/css" href="http://localhost/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/esri/css/esri.css" />
+    <script type="text/javascript" src="http://localhost/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/init.js"></script>
+    <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="stylesheets/toastr.min.css">
+
+    <style type="text/css">
+        .MapClass{
+            height: 900px;
+            width: 1500px;
+            border:1px solid #000;
+        }
+        .row
+        {
+            position: absolute;
+            right: 420px;
+        }
+    </style>
+</head>
+<body class="tundra">
+<div id="btn">
+    <button id="polygon">绘制</button>
+    <button data-toggle="modal" data-target="#myModal">裁剪</button>
+    <button id="identify">导出图幅</button>
+    <button id="download" onclick="downloadR()">下载</button>
+    <!--<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">-->
+    <!--开始演示模态框-->
+    <!--</button>-->
+</div>
+
+<div id="mapDiv" class="MapClass">
+    <div id="Maptools" class="row" >
+        <img id="selRect" src="/images/query/rectangle_icon_off.png" alt="拉框选择矩形"
+             title="拉框选择矩形" onclick="mapActive('selRect');"/>
+        <img id="selPol" src="/images/query/polygon_icon_off.png" alt="拉框选择多边形"
+             title="拉框选择多边形" onclick="mapActive('selPol');"/>
+        <img src="/images/query/zoom_back_icon_on.png" alt="全图" title="全图"
+             onclick="mapActive('fullMap');"/>
+        <img src="/images/query/ClearAOI_On.png" alt="清除标记" title="清除标记"
+             onclick="mapActive('clear');"/>
+    </div>
+</div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    输入任务名称
+                </h4>
+            </div>
+            <div class="modal-body">
+                <input type="text" >
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default"
+                        data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" id="clip" >
+                    提交任务
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+
+<script type="text/javascript" src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script src="javascripts/common/toastr.min.js"></script>
+
+
+
+<script>
+    var map, tb, imagelayer, graphic, imgTask, geometry, gp;
+
+    require([
+        "esri/map", "esri/toolbars/draw", "esri/symbols/SimpleLineSymbol","esri/symbols/SimpleFillSymbol","esri/graphic", "esri/layers/ArcGISImageServiceLayer", "esri/SpatialReference",
+        "esri/tasks/Geoprocessor","esri/tasks/FeatureSet","esri/tasks/JobInfo","esri/tasks/ImageServiceIdentifyTask","esri/tasks/ImageServiceIdentifyParameters","esri/tasks/ImageServiceIdentifyResult",
+        "esri/Color", "dojo/dom", "dojo/on", "dojo/domReady!"
+    ], function(
+            Map, Draw,SimpleLineSymbol, SimpleFillSymbol, Graphic, ArcGISImageServiceLayer,SpatialReference,
+            Geoprocessor,FeatureSet,JobInfo,ImageServiceIdentifyTask,ImageServiceIdentifyParameters,ImageServiceIdentifyResult,
+            Color, dom, on
+    ){
+        map = new Map("mapDiv",{
+            basemap:"osm",
+            center: [116, 40.5],
+            zoom: 10,
+            navigationMode: 'classic',
+        });
+
+        var spatialReference = new SpatialReference(102100);
+        //map.spatialReference = spatialReference;
+
+        imgserver = "http://localhost:6080/arcgis/rest/services/testthree/ImageServer";
+        imagelayer = new ArcGISImageServiceLayer(imgserver);
+
+        map.addLayer(imagelayer);
+        map.on("load", initToolbar);
+
+        imgTask = new ImageServiceIdentifyTask(imgserver);
+
+        function initToolbar() {
+            tb = new Draw(map);
+            tb.on("draw-end", addGraphic);
+
+            on(dom.byId("polygon"), "click", function(evt) {
+                map.graphics.clear();
+                var tool = evt.target.id.toLowerCase();
+                map.disableMapNavigation();
+                tb.activate(tool);
+            });
+
+            on(dom.byId("clip"), "click", clipjob);
+            on(dom.byId("identify"),"click",identifyByGraphic);
+        }
+
+        function identifyByGraphic(){
+            var identifyParam = new ImageServiceIdentifyParameters();
+            identifyParam.geometry = geometry;
+            imgTask.execute(identifyParam,showIdentifyResult);
+        }
+
+        function showIdentifyResult(results){
+            var result = results.catalogItems;
+            if(result.features.length > 0){
+                for(var i=0;i<result.features.length;i++){
+                    var feature = result.features[i];
+                    var name = feature.attributes["Name"];
+                    var objectid = feature.attributes["OBJECTID"];
+                    alert(objectid + ":" + name);
+                }
+            }
+        }
+
+        function addGraphic(evt) {
+            //deactivate the toolbar and clear existing graphics
+            tb.deactivate();
+            map.enableMapNavigation();
+            // figure out which symbol to use
+            var symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASHDOT, new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.25]));;
+            graphic = new Graphic(evt.geometry, symbol);
+            geometry = evt.geometry;
+            map.graphics.add(graphic);
+        }
+
+
+
+        function clipjob() {
+            //第一步构造GP
+            var gpUrl = 'http://localhost:6080/arcgis/rest/services/clip/GPServer/clip';
+            gp = new Geoprocessor(gpUrl);
+            gp.setOutSpatialReference({
+                wkid: 3857
+            });
+
+            gp.setProcessSpatialReference({
+                wkid: 3857
+            })
+            //第二步，构造参数
+            //我们通过上面，了解到GPFeatureRecordSetLayer对应FeatureSet
+            var features = [];
+            features.push(graphic);
+            var featureset = new FeatureSet();
+            featureset.features = features;
+
+            gp.setUpdateDelay(60000);
+
+            var parms = {
+                clip_shp: featureset
+                //Use_Input_Features_for_Clipping_Geometry:true
+            };
+
+            gp.submitJob(parms, gpcomplete,gpJobStatus);
+
+        }
+
+        function gpJobStatus(jobinfo) {
+            var jobstatus = '';
+            switch (jobinfo.jobStatus) {
+                case 'esriJobSubmitted':
+                    jobstatus = 'Submitted...';
+                    console.log(jobstatus);
+                    $.ajax({
+                        url:"/job",
+                        type:"post",
+                        data:{jobId:jobinfo.jobId},
+                        error:function(err){
+                            alert('错误');
+                        },
+                        success:function(data){
+                            // toastr.success("成功"+data);
+                        }
+                    })
+                    break;
+                case 'esriJobExecuting':
+                    jobstatus = 'Executing...';
+                    console.log(jobstatus);
+                    break;
+                case 'esriJobSucceeded':
+                    jobstatus = 'Succeeded...';
+                    console.log(jobstatus);
+                    break;
+            }
+            //保存任务ID给数据库
+
+        }
+        function gpcomplete(jobinfo) {
+            var jobId = jobinfo.jobId;
+            console.log(jobId);
+            var status = jobinfo.jobStatus;
+            if (status === esri.tasks.JobInfo.STATUS_SUCCEEDED) {
+                alert("裁剪完成");
+            }
+        }
+    });
+
+
+</script>
+
+</body>
+</html>
+"paging": true,//显示（使用）分页器
+"searching": false,//是否启用客户端过滤功能
+"lengthChange": false,//显示一个每页长度的选择条（需要分页器支持）
+"order": [[0, "desc"]],//指定按多列数据排序的依据
+"pageLength": 10,//用于指定一屏显示的条数，需开启分页器
+"pagingType": "bootstrap",//用于指定分页器风格
+"columnDefs": [{"orderable": false, "targets": [0]}],
+"destroy": true,
+"info": false
+
+var ii=0;
+//                            ii=ii+1;
+// console.log(i);
+//console.log(data[i]+"time");
+//time=moment(data[i].jobTime).format('YYYY-MM-DD hh:mm:ss');
+if(jobinfo.jobStatus==JobInfo.STATUS_SUCCEEDED){
+gp1.getResultData(jobinfo.jobId,"out_img",function (datat) {
+console.log(JSON.stringify(datat)+"获得链接");
+link=" <a href=\'"+datat.value.url+"\'>"+"下载"+"<\/a>";
+    //table.row.add([data[i].jobName,time,jobinfo.jobStatus,link]).draw();
+    //tableshow(jobinfo.jobStatus,link);
+    })
+    }else{
+    link=" <a>"+"空"+"<\/a>";
+        //table.row.add([data[i].jobName,time,jobinfo.jobStatus,link]).draw();
+        }

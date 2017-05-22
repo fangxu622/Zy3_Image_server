@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="login-alone">
+<head>
+    <title>带表单验证的HTML登录页面模板下载 - JS代码网</title>
+    <meta name="keywords" content="注册登录页面,注册登录模板页面,注册登录HTML页面,注册登录HTML" />
+    <meta name="description" content="JS代码网提供高质量注册登录页面模板下载" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="shortcut icon" type="image/x-icon" href="" />
+    <link href="stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" type="text/css" href="stylesheets/base.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/login.css">
+    <link rel="stylesheet" href="stylesheets/toastr.min.css">
+
+
+    <!--[if lt IE 9]>
+    <script>
+        window.location="homepage/support";
+    </script>
+    <![endif]-->
+</head>
+<body>
+<div class="logina-logo" style="height: 55px">
+    <a href="">
+        <img src="images/toplogo.png" height="60" alt="">
+    </a>
+</div>
+<div class="logina-main main clearfix">
+    <div class="tab-con">
+        <div id="form-login">
+            <div id='login-error' class="error-tip"></div>
+            <table border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+                <tr>
+                    <th>账户</th>
+                    <td width="245">
+                        <input name="email" type="text" id="username" placeholder="电子邮箱/手机号" autocomplete="off" >
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+                <tr>
+                    <th>密码</th>
+                    <td width="245">
+                        <input name="password" type="password" id="password" placeholder="请输入密码" autocomplete="off">
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+                <tr id="tr-vcode" style="display:none;" >
+                    <th>验证码</th>
+                    <td width="245">
+                        <div class="valid">
+                            <input type="text" name="vcode"><img class="vcode" width="85" height="35" alt="">
+                        </div>
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+                <tr class="find">
+                    <th></th>
+                    <td>
+                        <div>
+                            <label class="checkbox" for="chk11"><input style="height: auto;" id="chk11" type="checkbox" name="remember_me" >记住我</label>
+                            <a href="">忘记密码？</a>
+                        </div>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th></th>
+                    <td width="245"><input class="confirm" onclick="login()" value="登  录"></td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+            <input type="hidden" name="refer" value="site/">
+        </div>
+    </div>
+    <div class="reg">
+        <p>还没有账号？<br>赶快免费注册一个吧！</p>
+        <a class="reg-btn" href="#">立即免费注册</a>
+    </div>
+</div>
+<div id="footer">
+    <div class="copyright">Copyright © 2014 js-css.cn. All Rights Reserved. js代码网 版权所有</div>
+</div>
+</body>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="javascripts/common/toastr.min.js"></script>
+    <script>
+
+        function setCookie(name, value, seconds, domain) {
+            seconds = seconds || 0; // seconds有值就直接赋值，没有为0，这个跟php不一样。
+            var expires = "";
+
+            if (seconds != 0) { // 设置cookie生存时间
+                var date = new Date();
+                date.setTime(date.getTime() + (seconds * 1000));
+                expires = "; expires=" + date.toGMTString();
+            }
+            if (domain != null && domain != undefined && domain != '') {
+                domain = ';domain=' + domain;
+            } else {
+                domain = '';
+            }
+            document.cookie = name + "=" + escape(value) + expires + "; path=/"
+                    + domain; // 转码并赋值
+        }
+
+        function submit() {
+
+            var username=document.getElementById("username").value;
+            var password=document.getElementById("password").value;
+
+            $.ajax({
+                url:'/login',
+                type:'post',
+                data:{username:username,password:password},
+                error:function(err){
+                    toastr.error("请求错误");
+                },
+                success:function(data){
+                    if(data==500){toastr.error("查询出错")}
+                    if(data==300){toastr.error("用户名或密码出错")}
+                    if(data==200){toastr.success("登录成功");window.location.href='/';}
+                }
+            })
+        }
+
+        //读取cookie
+        function ReadCookie(name) {
+            var arr = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)(;|$)"));
+            if (arr != null) return unescape(arr[2]); return null;
+        };
+
+        function login(){
+            var uid=$("#u").val();
+            var pwd=$("#p").val();
+            if(uid.length<1){
+                toastr.error("用户名不能为空！");
+            }
+            else  if(pwd.length<1){
+                toastr.error("密码不能为空！");
+            }
+            else{
+                $.ajax({
+                    url:'/login',
+                    type:'post',
+                    dataType: 'json',
+                    data: {
+                        username:uid,
+                        password:pwd
+                    },
+                    error:function(err){
+                        toastr.error("用户名或密码错误！");
+                    },
+                    success:function(result){
+                        if (result == "1"||result=="2") {
+                            toastr.error("用户名或密码错误，请重新输入！");
+                            $("#password").val("");
+                        }
+                        else if (result == "0") {
+                            setCookie('username', uid, 1800);
+                            setCookie('password', pwd, 1800);
+                            window.location.href = '/';
+                        }
+                    }
+                });
+            }
+        }
+
+
+    </script>
+
+</html>

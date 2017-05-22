@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>资源三号一版图服务</title>
+
+    <link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.13/css/jquery.dataTables.css">
+    <link rel="stylesheet" href="stylesheets/toastr.min.css">
+    <link rel="stylesheet" type="text/css" href="http://192.168.0.251:82/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dijit/themes/claro/claro.css"/>
+    <link rel="stylesheet" type="text/css" href="http://192.168.0.251:82/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/esri/css/esri.css" />
+    <link rel="stylesheet" href="libs/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="libs/duallistbox/bootstrap-duallistbox.min.css"/>
+    <link rel="stylesheet" href="theme/base/css/base.css"/>
+    <style type="text/css">
+        /*.MapClass{*/
+            /*height: 900px;*/
+            /*width: 1500px;*/
+            /*border:1px solid #000;*/
+        /*}*/
+        .row
+        {
+            position: absolute;
+            right: 420px;
+        }
+    </style>
+</head>
+<body class=claro">
+
+<div style="position:relative;z-index:900">
+    <!-- toolbar -->
+    <nav id="esricdBar" class="navbar navbar-default" role="navigation" style="margin-bottom:0px;">
+        <div class="container-fluid" style="margin-left:auto; margin-right:auto;">
+            <div class="navbar-header" style="margin-bottom:0px;" >
+                <span class="navbar-brand" href="#" style="color:#990000;font-size:29px;font-family:宋体;"><strong>资源三号一版图影像服务平台</strong></span>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <!--<div class="navbar-right">-->
+                    <!--<div class="esricd-geocoder">-->
+                        <!--<div id="GeocoderDiv"></div>-->
+                    <!--</div>-->
+                    <!--<div class="esricd-toxy">-->
+                        <!--<div class="input-group">-->
+                            <!--<input node-type="toXyInput" type="text" class="form-control" value="102.7053,25.0305"-->
+                                   <!--placeholder="格式为：经度,纬度">-->
+                            <!--<span class="input-group-btn">-->
+                <!--<button node-type="toXyBtn" class="btn btn-default" type="button">定位</button>-->
+              <!--</span>-->
+                        <!--</div>-->
+                    <!--</div>-->
+
+                <!--</div>-->
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <button id="toolbarDrawBtn" data-rel-panel="toolbarDrawPanel" type="button"
+                                class="btn btn-default navbar-btn"><img src="theme/base/images/icons/draw.png">&nbsp;&nbsp;绘制
+                        </button>
+                        <!--&lt;!&ndash;toolbar面板_空间查询&ndash;&gt;-->
+                        <div id="toolbarDrawPanel" data-rel-btn="toolbarDrawBtn"
+                             class="panel panel-default esricd-bar-panel" style="width: 280px;">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">动态绘
+                                    <button node-type="hideBarPanel" type="button" name="toolbarDraw" onclick="panHide(this)" class="close" data-dismiss="" style="">
+                                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                                    </button>
+                                </h3>
+                            </div>
+                            <div id="info" class="panel-body">
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Point</button>-->
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Multi Point</button>-->
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Line</button>-->
+                                <button id="Rectangle" node-type="drawBtn" type="button" class="btn btn-default">矩形</button>
+                                <button id="Polygon" node-type="drawBtn" type="button" class="btn btn-default">多边形</button>
+
+
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Arrow</button>-->
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Triangle</button>-->
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Circle</button>-->
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Ellipse</button>-->
+
+
+                                <!--<button node-type="drawBtn" type="button" class="btn btn-default">Freehand Polyline-->
+                                <!--</button>-->
+
+                                <!--<button id="FreehandPolygon" node-type="drawBtn" type="button" class="btn btn-default">Freehand Polygon-->
+                                <!--</button>-->
+                                <button id="cleargraphics" node-type="drawBtn" type="button" class="btn btn-default">清空</button>
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <button id="uploadShapeBtn" data-rel-panel="uploadShapePanel" type="button"
+                                class="btn btn-default navbar-btn"><img src="theme/base/images/icons/bookmark.png">&nbsp;&nbsp;上传Shp
+                        </button>
+                        <!--toolbar面板_书签-->
+                        <div id="uploadShapePanel" data-rel-btn="uploadShapeBtn"
+                             class="panel panel-default esricd-bar-panel" style="width: 260px;">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">上传Shapefile文件
+                                    <button style="" node-type="hideBarPanel" name="uploadShape" onclick="panHide(this)" type="button" class="close" data-dismiss="">
+                                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                                    </button>
+                                </h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="bookmarkDiv" >
+                                    <form class="" style="width:200px" action="/users/convert" method="post" target="myIframe" enctype="multipart/form-data">
+                                        <div class="input-group">
+                                            <input id="upload" type="file" name="upload" onchange="f2()" style="width:180px">
+                                            </div>
+                                            <input id="forcePlainText" type="text"
+                                               name="forcePlainText" style="display:none;" />
+                                        <button id="convert" style="display: none"> 提交表单</button>
+                                    </form>
+                                    <iframe name="myIframe" id="myIframe" src="" style="display:none"></iframe>
+
+                                </div>
+                            </div>
+                        </div>
+                        <!--toolbar面板 end-->
+                    </li>
+                    <!--<li>-->
+                        <!--<button id="toolbarDrawBtn1" data-rel-panel="toolbarImagePanel" type="button"-->
+                                <!--class="btn btn-default navbar-btn"><img src="theme/base/images/icons/nav_pan.png">&nbsp;&nbsp;影像-->
+                        <!--</button>-->
+                        <!--&lt;!&ndash;&lt;!&ndash;toolbar面板_空间查询&ndash;&gt;&ndash;&gt;-->
+                        <!--<div id="toolbarDrawPanel1" data-rel-btn="toolbarImageBtn"-->
+                             <!--class="panel panel-default esricd-bar-panel" style="width: 280px;">-->
+                            <!--<div class="panel-heading">-->
+                                <!--<h3 class="panel-title">影像下载任务提交-->
+                                    <!--<button node-type="hideBarPanel" type="button" class="close" data-dismiss="alert">-->
+                                        <!--<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>-->
+                                    <!--</button>-->
+                                <!--</h3>-->
+                            <!--</div>-->
+                            <!--<div id="info1" class="panel-body">-->
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Point</button>&ndash;&gt;-->
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Multi Point</button>&ndash;&gt;-->
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Line</button>&ndash;&gt;-->
+                                <!--<button id="Rectangle1" node-type="drawBtn" type="button" class="btn btn-default">Rectangle</button>-->
+                                <!--<button id="Polygon1" node-type="drawBtn" type="button" class="btn btn-default">Polygon</button>-->
+
+
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Arrow</button>&ndash;&gt;-->
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Triangle</button>&ndash;&gt;-->
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Circle</button>&ndash;&gt;-->
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Ellipse</button>&ndash;&gt;-->
+
+
+                                <!--&lt;!&ndash;<button node-type="drawBtn" type="button" class="btn btn-default">Freehand Polyline&ndash;&gt;-->
+                                <!--&lt;!&ndash;</button>&ndash;&gt;-->
+
+                                <!--<button id="FreehandPolygon1" node-type="drawBtn" type="button" class="btn btn-default">Freehand Polygon-->
+                                <!--</button>-->
+                                <!--<button id="cleargraphics1" node-type="drawBtn" type="button" class="btn btn-default">清空</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</li>-->
+
+                    <li>
+                        <button id="clearpan" node-type="panBtn" type="button" class="btn btn-default navbar-btn">
+                            <img src="images/eraser.png"/>&nbsp;&nbsp;清空
+                        </button>
+                    </li>
+                    <li>
+                        <button id="imageServerBtn" data-rel-panel="imageServerPanel" type="button"
+                                class="btn btn-default navbar-btn"><img src="theme/base/images/icons/measure.png">&nbsp;&nbsp;影像
+                        </button>
+                        <!--toolbar面板_测量工具-->
+                        <div id="imageServerPanel" data-rel-btn="imageServerBtn"
+                             class="panel panel-default esricd-bar-panel" style="width:250px;">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">影像服务
+                                    <button  style="" node-type="hideBarPanel" name="imageServer" onclick="panHide(this)" type="button" class="close" data-dismiss="">
+                                        <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                                    </button>
+                                </h3>
+                            </div>
+                            <div class="panel-body">
+                                <!--<div id="measurementDiv">-->
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Point</button>-->
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Multi Point</button>-->
+                                        <!--<button data-toggle="modal" data-target="#myModal" node-type="drawBtn" type="button" class="btn btn-default">Line</button>-->
+                                        <button  node-type="drawBtn" type="button" class="btn btn-default" id="clipdialog">裁剪影像</button>
+                                        <button id="exportsheet" node-type="drawBtn" type="button" class="btn btn-default">导出图幅</button>
+
+
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Arrow</button>-->
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Triangle</button>-->
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Circle</button>-->
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Ellipse</button>-->
+
+
+                                        <!--<button node-type="drawBtn" type="button" class="btn btn-default">Freehand Polyline-->
+                                        <!--</button>-->
+
+                                        <!--<button id="FreehandPolygon1" node-type="drawBtn" type="button" class="btn btn-default">Freehand Polygon-->
+                                        <!--</button>-->
+                                        <!--<button id="cleargraphics1" node-type="drawBtn" type="button" class="btn btn-default">清空</button>-->
+                                    <!--</div>-->
+                            </div>
+                        </div>
+                        <!--toolbar面板 end-->
+                    </li>
+
+                    <li>
+                    <button id="tasktable" data-toggle="modal" data-target="#jobModal" node-type="panBtn" type="button" class="btn btn-default navbar-btn">
+                    <img src="theme/base/images/icons/nav_pan.png"/>&nbsp;&nbsp;任务列表
+                    </button>
+                    </li>
+
+                    <!--<li>-->
+                        <!--<button id="toolbarPrintBtn" data-rel-panel="toolbarPrintPanel" type="button"-->
+                                <!--class="btn btn-default navbar-btn"><img src="theme/base/images/icons/printer.png">&nbsp;&nbsp;打印-->
+                        <!--</button>-->
+                        <!--&lt;!&ndash;&lt;!&ndash;toolbar面板_空间查询&ndash;&gt;&ndash;&gt;-->
+                        <!--<div id="toolbarPrintPanel" data-rel-btn="toolbarPrintBtn"-->
+                             <!--class="panel panel-default esricd-bar-panel" style="width: 260px;">-->
+                            <!--<div class="panel-heading">-->
+                                <!--<h3 class="panel-title">打印地图-->
+                                    <!--<button node-type="hideBarPanel" type="button" class="close" data-dismiss="alert">-->
+                                        <!--<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>-->
+                                    <!--</button>-->
+                                <!--</h3>-->
+                            <!--</div>-->
+                            <!--<div class="panel-body">-->
+                                <!--<div id="print">-->
+                                <!--</div>-->
+                            <!--</div>-->
+                        <!--</div>-->
+
+                    <!--</li>-->
+
+
+
+                    <!--<li>-->
+                        <!--<button id="gpBtn" data-rel-panel="gpPanel" type="button"-->
+                                <!--class="btn btn-default navbar-btn"><img src="theme/base/images/icons/gp.png">&nbsp;&nbsp;GP服务-->
+                        <!--</button>-->
+                        <!--&lt;!&ndash;&lt;!&ndash;toolbar面板_空间查询&ndash;&gt;&ndash;&gt;-->
+                        <!--<div id="gpPanel" data-rel-btn="gpBtn"-->
+                             <!--class="panel panel-default esricd-bar-panel" style="width: 150px;">-->
+                            <!--<div class="panel-heading">-->
+                                <!--<h3 class="panel-title">GP服务-->
+                                    <!--<button node-type="hideBarPanel" type="button" class="close" data-dismiss="alert">-->
+                                        <!--<span aria-hidden="true">&times;</span><span class="sr-only">Close</span>-->
+                                    <!--</button>-->
+                                <!--</h3>-->
+                            <!--</div>-->
+                            <!--<div class="panel-body">-->
+                                <!--<button node-type="startBtn" type="button" class="btn btn-default">执行</button>-->
+                                <!--<button node-type="clearBtn" type="button" class="btn btn-default">清空</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+
+                    <!--</li>-->
+                    <li>
+                        <button node-type="zoomOutBtn" type="button" class="btn btn-default navbar-btn" id="loginout" onclick="loginout()">
+                            <img src="/images/login/sign-out.png"/>&nbsp;&nbsp;退出
+                        </button>
+                    </li>
+                    <li>
+                        <button id="zoomIn" node-type="zoomInBtn" type="button" class="btn btn-default navbar-btn">
+                            <img src="/images/login/user.png"/>&nbsp;&nbsp;<span id="uid"></span>
+                        </button>
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+    <!-- toolbar end -->
+</div>
+
+<!--<div>-->
+
+    <!--<lable>用户:</lable> <input type="text" id="uid1" disabled="true">-->
+    <!--<button >登出</button>-->
+    <!--<button id="info2">绘制</button>-->
+    <!--<button>裁剪</button>-->
+    <!--<button >导出图幅</button>-->
+    <!--<button id="download" onclick="downloadR()">下载</button>-->
+
+    <!--<button >任务列表</button>-->
+
+<!--</div>-->
+
+
+<div id="mapDiv" class="MapClass" style="position:relative;">
+    <!--<div id="Maptools" class="row" >-->
+        <!--<img id="selRect" src="/images/query/rectangle_icon_off.png" alt="拉框选择矩形"-->
+             <!--title="拉框选择矩形" onclick="mapActive('selRect');"/>-->
+        <!--<img id="selPol" src="/images/query/polygon_icon_off.png" alt="拉框选择多边形"-->
+             <!--title="拉框选择多边形" onclick="mapActive('selPol');"/>-->
+        <!--<img src="/images/query/zoom_back_icon_on.png" alt="全图" title="全图"-->
+             <!--onclick="mapActive('fullMap');"/>-->
+        <!--<img src="/images/query/ClearAOI_On.png" alt="清除标记" title="清除标记"-->
+             <!--onclick="mapActive('clear');"/>-->
+    <!--</div>-->
+    <div id="HomeButton"></div>
+</div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true"  >
+    <div class="modal-dialog" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    影像裁剪
+                </h4>
+            </div>
+            <div class="modal-body"  >
+                <lable>名称：</lable><input id="jobname" type="text" />
+                <lable>用途：</lable><select id="purpose">
+                    <option value="unselect" selected >请选择</option>
+                    <option value="personal">个人</option>
+                    <option value ="science">科研</option>
+                    <option value ="business">商业</option>
+                    <option value ="others">其他</option>
+                </select>
+                <lable>备注：</lable><input id="jobnote" type="text" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default"
+                        data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" id="clip" >
+                    提交任务
+                </button>
+                <!--<button onclick="test()"> test</button>-->
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!--任务列表model -->
+<div class="modal fade bs-example-modal-lg" id="jobModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true" style="width: 100%">
+    <div class="modal-dialog modal-lg" style="">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="jobModalLabel">
+                    任务列表
+                </h4>
+            </div>
+            <div class="modal-body">
+                <table id="example-1">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>类型</th>
+                        <th>提交时间</th>
+                        <th>状态</th>
+                        <th>下载</th>
+                        <th>位置</th>
+                        <th>用途</th>
+                        <th>备注</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <!--<div class="modal-footer">-->
+                <!--<button type="button" class="btn btn-default"-->
+                        <!--data-dismiss="modal">关闭-->
+                <!--</button>-->
+                <!--<button type="button" class="btn btn-primary" id="" >-->
+                    <!--提交任务-->
+                <!--</button>-->
+
+            <!--</div>-->
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<!--<button id="" onclick="()" >定位</button>-->
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal2" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true"  >
+    <div class="modal-dialog" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close"
+                        data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel2">
+                    图幅任务
+                </h4>
+            </div>
+            <div class="modal-body"  >
+                <lable>名称：</lable><input id="sheetname" type="text" />
+                <lable>用途：</lable><select id="sheetpurpose">
+                    <option value="unselect" selected>请选择</option>
+                    <option value="personal">个人</option>
+                    <option value ="science">科研</option>
+                    <option value ="business">商业</option>
+                    <option value ="others">其他</option>
+                </select>
+                <lable>备注：</lable><input id="jobsheetnote" type="text" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default"
+                        data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary" id="identify" name="submittask" >
+                    提交任务
+                </button>
+                <!--<button onclick="test()"> test</button>-->
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div id='container' style="display:none"></div>
+
+<script type="text/javascript" src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+
+
+<!-- jQuery -->
+<!--<script type="text/javascript" charset="utf8" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>-->
+
+<!-- DataTables -->
+<script type="text/javascript" charset="utf8" src="http://cdn.datatables.net/1.10.13/js/jquery.dataTables.js"></script>
+
+<script src="javascripts/coordtransform.js"></script>
+
+<script src="javascripts/common/toastr.min.js"></script>
+<script src="http://apps.bdimg.com/libs/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script src="javascripts/common/moment.js"></script>
+<script type="text/javascript" src="http://192.168.0.251:82/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/init.js"></script>
+
+<!--高德定位相关文件-->
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=c53f6a49a6fa552d278028d5956237aa"></script>
+
+
+<script>
+    toastr.options = {
+        positionClass: "toast-bottom-center"
+
+    };
+
+    ////////////////////////检查登录////////////
+
+function setCookie(name, value, seconds, domain) {
+    seconds = seconds || 0; // seconds有值就直接赋值，没有为0，这个跟php不一样。
+    var expires = "";
+
+    if (seconds != 0) { // 设置cookie生存时间
+        var date = new Date();
+        date.setTime(date.getTime() + (seconds * 1000));
+        expires = "; expires=" + date.toGMTString();
+    }
+    if (domain != null && domain != undefined && domain != '') {
+        domain = ';domain=' + domain;
+    } else {
+        domain = '';
+    }
+    document.cookie = name + "=" + escape(value) + expires + "; path=/"
+            + domain; // 转码并赋值
+}
+//读取cookie
+function ReadCookie(name) {
+    var arr = document.cookie.match(new RegExp("(^| )" + name + "=([^;]*)(;|$)"));
+    if (arr != null) return unescape(arr[2]); return null;
+};
+
+var username=ReadCookie("username")
+        $('#uid').text(username);
+
+
+function loginout(){
+    setCookie("username", "", -1);
+    window.location.href = '/';
+}
+
+////////////////////////////////////
+    var map, tb, imagelayer, graphic, imgTask, geometry, gp,abc,geolocation,gloabalsheetshp,para,kk;
+    var dat=[];
+
+    var timeoutProcess;
+    var table= $('#example-1').DataTable({
+        //"order": [[ 1, "desc" ]],
+        "pagingType": "numbers",//用于指定分页器风格
+        "paging": true,//显示（使用）分页器
+        "searching": false,//是否启用客户端过滤功能
+        "lengthChange": false,//显示一个每页长度的选择条（需要分页器支持）
+        //"order": [[0, "desc"]],//指定按多列数据排序的依据
+        "pageLength": 10,//用于指定一屏显示的条数，需开启分页器
+        //"columnDefs": [{"orderable": false, "targets": [0]}],
+        "destroy": true,
+        "info": false
+    });
+
+    require([
+        "esri/map", "dojo/_base/array","esri/config", "esri/toolbars/draw",
+        "esri/symbols/SimpleLineSymbol","esri/symbols/SimpleFillSymbol","esri/symbols/SimpleMarkerSymbol",
+        "esri/InfoTemplate","esri/layers/GraphicsLayer","esri/tasks/BufferParameters","esri/geometry/normalizeUtils",
+        "esri/graphic", "esri/layers/ArcGISImageServiceLayer", "esri/SpatialReference",
+        "esri/geometry/Polygon","esri/symbols/PictureMarkerSymbol",
+        "esri/geometry/Geometry","esri/dijit/HomeButton","esri/geometry/Point",
+        "esri/layers/ArcGISTiledMapServiceLayer",
+        "esri/tasks/Geoprocessor","esri/tasks/FeatureSet",
+        "esri/tasks/JobInfo","esri/tasks/ImageServiceIdentifyTask","esri/tasks/GeometryService",
+        "esri/tasks/ImageServiceIdentifyParameters","esri/tasks/ImageServiceIdentifyResult",
+        "esri/Color", "dojo/dom", "dojo/on", "dojo/domReady!"
+    ], function(
+            Map,array,esriConfig,Draw,SimpleLineSymbol, SimpleFillSymbol,SimpleMarkerSymbol,
+            InfoTemplate,GraphicsLayer,BufferParameters,normalizeUtils,
+            Graphic, ArcGISImageServiceLayer,
+            SpatialReference,Polygon,PictureMarkerSymbol,Geometry,HomeButton,
+            Point,ArcGISTiledMapServiceLayer,
+            Geoprocessor,FeatureSet,JobInfo,ImageServiceIdentifyTask,GeometryService,
+            ImageServiceIdentifyParameters,ImageServiceIdentifyResult,
+            Color, dom, on
+    ){
+        //缓冲区服务
+        esriConfig.defaults.geometryService = new GeometryService("https://utility.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer");
+
+        esriConfig.defaults.io.proxyUrl = "/proxy/";
+        esriConfig.defaults.io.alwaysUseProxy = false;
+
+        map = new Map("mapDiv",{
+            //basemap:"osm",
+            center: [116.3, 39.9],
+            zoom: 12,
+            spatialReference:{wkid:4326},
+            navigationMode: 'classic'
+        });
+
+        var timeout;
+
+       //var gpurl="http://192.168.0.251:6080/arcgis/rest/services/oneMapClip/GPServer";
+
+        var gpUrl ='http://192.168.0.251:6080/arcgis/rest/services/oneMapClip/GPServer/oneMapClip';
+        var imgFourUrl="http://192.168.0.251:6080/arcgis/rest/services/testfour/ImageServer";
+        var imgOneMapUrl="http://192.168.0.251:6080/arcgis/rest/services/oneMap/ImageServer";
+        var graphicsLayer = new GraphicsLayer({ id: "GraphicsLayer" });
+
+        var gSheetLayer = new GraphicsLayer({ id: "gSheetLayer" });
+
+        var homeButton = new HomeButton({
+            map: this.map
+        }, "HomeButton");
+        //homeButton.startup();
+
+        var layer = new ArcGISTiledMapServiceLayer(
+                "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineCommunity/MapServer",
+                {spatialReference:{wkid:3857}}
+        );
+        map.addLayer(layer);
+
+        var layer1 = new ArcGISTiledMapServiceLayer(imgOneMapUrl);
+        map.addLayer(layer1);
+        map.addLayer(graphicsLayer);
+
+        var spatialReference = new SpatialReference(102100);
+
+        imgserver = imgOneMapUrl;
+        imagelayer = new ArcGISImageServiceLayer(imgserver);
+
+
+        map.on("load", initToolbar);
+
+        on(gSheetLayer,"click",function(event){
+            var graphic=event.graphic;
+            console.log(graphic.geometry);
+            gloabalsheetshp=graphic.geometry;
+        });
+
+
+        imgTask = new ImageServiceIdentifyTask(imgserver);
+
+        var symbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255,0,0]), 2), new Color([125, 125, 0, 0.25]));
+        var symbolmap = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([144,238, 144]), 2), new Color([255, 255, 0, 0.05]));
+
+        function initToolbar() {
+            tb = new Draw(map);
+            tb.on("draw-end", addGraphic);
+
+            on(dom.byId("info"), "click", function(evt) {
+                var tool = evt.target.id.toLowerCase();
+
+
+
+                if ( tool=== "info"){
+                    return;
+                };
+                if ( tool=== "cleargraphics") {
+                    graphicsLayer.clear();
+                    gSheetLayer.clear();
+                    return;
+                }else{
+                    graphicsLayer.clear();
+                    gSheetLayer.clear();
+                    tb.activate(tool);
+                }
+
+            });
+
+            on(dom.byId("clip"), "click", clipjob);
+
+            on(dom.byId("clipdialog"), "click", clipdialog);
+            on(dom.byId("identify"), "click", submitsheettask);
+
+            on(dom.byId("exportsheet"),"click",identifyByGraphic);
+
+            on(dom.byId("tasktable"),"click",getjobInfo);
+            on(dom.byId("convert"),"click",f3);
+            on(dom.byId("HomeButton"),"click",centerMap);
+
+            on(dom.byId("clearpan"),"click",function(){
+                graphicsLayer.clear();
+                gSheetLayer.clear()
+            })
+
+        }
+
+        function submitsheettask(event) {
+           var sheetname=event.target.name;
+           var r;
+            r=document.getElementById('sheetname').value;
+            //var pose;
+            var pose=$("#sheetpurpose option:selected").text();
+            if(pose=="请选择"){
+               toastr.warning("请选择用途");
+                return;
+            }
+            $('#myModal2').modal('hide');
+            var sendata={
+                    username:username,
+                    jobName:r,
+                    jobStatus:"esriJobSucceeded",
+                    nameAndId:sheetname,
+                    jobShape:JSON.stringify(gloabalsheetshp),
+                    jobPurpose:pose,
+                    jobNote: $("#jobsheetnote").val()
+                };
+            $.ajax({
+                url:"/sheetmap",
+                type:'post',
+                async:false,
+                //traditional: true,//传递数组
+                dataType:'json',
+                data:sendata,
+                success:function(res){
+                    if(res==1){
+                        toastr.success("图幅下载任务已提交");
+                    }
+                },
+                error:function (err){
+                    toastr.error("图幅下载请求错误");
+                }
+
+            })
+            trigger();
+        }
+
+        function centerMap() {
+            //map.centerAt(new Point(110, 35, new SpatialReference({ wkid: 4326 })));
+            map.centerAndZoom(new Point(116, 39, new SpatialReference({ wkid: 4326 })), 4)
+        }
+
+        function identifyByGraphic(){
+            var identifyParam = new ImageServiceIdentifyParameters();
+
+            if (graphicsLayer.graphics.length==0){
+                toastr.warning("请绘制图形或者上传shp文件");
+                return;
+            }
+            //$('#myModal2').modal('hide');
+            identifyParam.geometry = graphicsLayer.graphics[0].geometry;
+            gloabalsheetshp=graphicsLayer.graphics[0].geometry;
+
+            identifyParam.returnGeometry=true;
+
+            imgTask.execute(identifyParam,showIdentifyResult);
+        }
+
+        abc=function(x){
+            console.log(x);
+
+             $('#identify').attr("name",x.name);
+        };///匿名函数
+
+        function showIdentifyResult(results){
+
+//            var attribute = {Name:"北京首都机场",City:sheet,Longitude:116.596664,Latitude:40.071667} ;
+//            var infotemplate = InfoTemplate("${Name}","城市：${City}<br/>经度：${Longitude}<br/>纬度：${Latitude}");
+//            var graphic = new Graphic(result.features ,symbol,attribute,infotemplate);
+//            graphicsLayer.add(graphic);
+//            map.setExtent(geomerty.getExtent());
+//            console.log("map.getZoom()="+map.getZoom());
+            var result = results.catalogItems;
+            var sheet=[];
+            var idname=[]
+            if (graphicsLayer.graphics.length<=result.features.length)
+            {
+                //防止在没有图幅内容的情况下在此点击导出图幅重绘的情况
+                for (var i=0;i<result.features.length;i++){
+
+                    var para= result.features[i].attributes["Name"];
+                    var paraid= result.features[i].attributes["OBJECTID"];
+                    if(para.indexOf(".")>0){
+                        para=para.substring(0,para.indexOf("."));
+                    }
+                    console.log(para);
+                    idname[i]=para+"*"+paraid;
+                    sheet[i]="<button data-toggle=\"modal\" data-target=\"#myModal2\"  name=\""+idname[i]+"\" onclick=\""+"abc(this)"+"\" >"+"提交图幅下载任务"+" "+"<\/button>";
+
+                    var attribute = {Name:"图幅"+paraid,Sheeted:para,City:sheet[i]};
+                    var infotemplate = InfoTemplate("${Name}","图幅号：${Sheeted} <br/>下载：${City}");
+
+                    var graphicsheet = new Graphic(result.features[i].geometry, symbolmap,attribute,infotemplate);
+                    gSheetLayer.add(graphicsheet);
+                    map.addLayer(gSheetLayer)
+
+                }
+            }else{
+                toastr.warning("图幅已导出，请单击图幅提交下载任务");
+            }
+        }
+
+        function addGraphic(evt) {
+            //deactivate the toolbar and clear existing graphics
+            tb.deactivate();
+
+            //map.enableMapNavigation();
+            // figure out which symbol to use
+            graphic = new Graphic(evt.geometry, symbol);
+            //geometry = evt.geometry;
+            graphicsLayer.add(graphic);
+
+        }
+
+        function clipdialog(){
+            if(graphicsLayer.graphics.length>1){
+                toastr.warning("请先清除图幅内容再进行裁剪")
+                return;
+            }
+            if(graphicsLayer.graphics.length==0){
+                toastr.warning("请先绘制裁剪范围或者上传shp")
+                return;
+            }
+            $('#myModal').modal("show");
+        }
+
+        function clipjob() {
+//        var a=document.getElementById('clip').value;
+//
+//            if(!a){
+//                toastr.warning('请输入任务名称');
+//                return;
+//            }
+            var po=$("#purpose option:selected").text();
+            if(po=="请选择"){
+                toastr.warning("请选择用途!");
+                return;
+            }
+            //第一步构造GP
+            gp = new Geoprocessor(gpUrl);
+//            gp.setOutSpatialReference({
+//                wkid: 3857
+//            });
+//            gp.setProcessSpatialReference({
+//                wkid: 3857
+//            })
+            //第二步，构造参数
+            //我们通过上面，了解到GPFeatureRecordSetLayer对应FeatureSet
+            var features = [];
+            features.push(graphic);
+            var featureset = new FeatureSet();
+            featureset.features = features;
+
+            //gp.setUpdateDelay(5000);
+
+            var parms = {
+                clip_shp: featureset,
+                use_feature:true,
+                NoData:"0"
+                //Use_Input_Features_for_Clipping_Geometry:true
+            };
+
+            gp.submitJob(parms, gpcomplete,gpJobStatus);
+            $('#myModal').modal('hide');
+
+        }
+
+        function gpJobStatus(jobinfo) {
+
+            var jobname= $.trim($('#jobname').val());
+            var jobstatus = '';
+            switch (jobinfo.jobStatus) {
+                case 'esriJobSubmitted':
+
+                    var shape=graphicsLayer.graphics[0].toJson();
+                    var shpdata=JSON.stringify(shape.geometry);
+
+                    var sdata={
+                        jobId:jobinfo.jobId,
+                        jobName:jobname,
+                        username:username,
+                        jobStatus:"esriJobExecuting",
+                        jobShape:shpdata,
+                        jobPurpose: $("#purpose option:selected").text(),
+                        jobNote: $("#jobnote").val()
+                    }
+
+                    jobstatus = 'Submitted...';
+                    console.log(jobstatus);
+                    $.ajax({
+                        url:"/job",
+                        type:"post",
+                        //async:flase,
+                        //traditional: true,
+                        data:sdata,
+                        error:function(err){
+                            //toastr.error("任务提交错误");;
+                        },
+                        success:function(data){
+
+                            if(data==1){
+                                toastr.success("裁剪任务已提交");
+                            }
+
+                            trigger();
+                        }
+                    });
+                    break;
+                case 'esriJobExecuting':
+                    jobstatus = 'Executing...';
+                    console.log(jobstatus);
+                    break;
+                case 'esriJobSucceeded':
+                    jobstatus = 'Succeeded...';
+                    console.log(jobstatus);
+//                    $.ajax({
+//                        url:"/jobsuccess",
+//                        type:"post",
+//                        data:{jobId:jobinfo.jobId,jobStatus:"success"},
+//                        error:function(err){
+//                            alert('错误');
+//                        },
+//                        success:function(data){
+//                            toastr.success("成功"+data);
+//
+//                        }
+//                    });
+                    break;
+            }
+            //保存任务ID给数据库
+
+        }
+
+        function gpcomplete(jobinfo) {
+            var jobId = jobinfo.jobId;
+            console.log(jobId);
+            var status = jobinfo.jobStatus;
+            if (status === JobInfo.STATUS_SUCCEEDED) {
+                console.log(JobInfo.STATUS_SUCCEEDED);
+                //alert("裁剪完成");
+            }
+        }
+
+        function completeupdate(para_jobId){//如果裁剪任务完成，就开始转移数据
+            //var gpUrl = 'http://192.168.0.251:82:6080/arcgis/rest/services/clip/GPServer/clip';
+            //gp2 = new Geoprocessor(gpUrl);
+            //gp2.checkJobStatus();
+            $.ajax({
+                url:"/users/copyfile",
+                type:"post",
+                data:{id:para_jobId},
+                success:function (result){
+                    if(result==1){
+                        console.log(1)
+                    }
+                },
+                error:function (err) {
+                }
+            })
+
+        }
+
+        var tg=true;
+        function trigger(){
+            if(tg){
+                timeout=window.setInterval(getjobInfo,5000);
+                tg=false;
+            }
+
+        }
+
+        function cleartrigger(){
+            if(!tg){
+                window.clearInterval(timeout);
+                tg=true;
+            }
+
+        }
+
+         geolocation=function(value){
+             console.log(value.id+"*");
+             $('#jobModal').modal("hide")
+            $.ajax({
+                url:"/users/locations",
+                type:'post',
+                data:{id:value.id},
+                success:function(data){
+                    if(data==0){
+                        toastr.warning("定位请求返回失败！")
+                    }else{
+                        var geoshp=JSON.parse(data.jobShape);
+                        //var
+                        console.log(geoshp);
+                        console.log(JSON.stringify(geoshp));
+
+                        graphicsLayer.clear();
+                        gSheetLayer.clear();
+
+                        var ppoly=new Polygon(geoshp);
+                        //var extent=poly.getExtent()
+                        graphic = new Graphic(ppoly, symbol);
+                        graphicsLayer.add(graphic);
+                        map.setExtent(ppoly.getExtent().expand(2));
+                    }
+                },
+                error:function(err){
+                  toastr.error("定位请求失败！")
+                }
+            })
+            console.log(value)
+        };
+
+        function getjobInfo(){
+            $.ajax({
+                url:"/jobinfo",
+                type:"post",
+                sync: false,
+                data:{username:username},
+                error:function(err){
+                    toastr.error("getjobinfo函数，ajax请求出错")
+                },
+                success:function(data){
+
+                    table.clear();
+                    var w=0;
+                    for(var k=0;k<data.length;k++){
+                        if(data[k].jobStatus == "extractedSuccess" || data[k].jobStatus == "esriJobFailed" ){
+                            w=w+1;
+                        }
+                        if(w==data.length){
+                            cleartrigger();
+                        }
+                    }
+
+                    gp1 = new Geoprocessor(gpUrl);
+                    if(data==0){
+                        toastr.warning("数据库没有数据"+data);
+                        cleartrigger();
+                        return;}
+                    //toastr.success("成功"+data[0]);
+                    var link,time;
+
+                    //回调函数
+                    function f1(para1,para2,para3) {
+                        $.ajax({
+                            url:"/updatejob",
+                            type:'post',
+                            data:{jobId:para1,jobStatus:para2,jobDownload:para3,username:username},
+                            error:function(err){toastr.error("updatejob 请求失败")},
+                            success:function(data){
+                                if(data==1){
+                                    toastr.success("GP服务执行已完成")
+                                }
+                                else{toastr.warning("GP服务状态更新失败") }
+                            }
+                        })
+                    }
+
+                    var st;//转态显示
+                    var locate=[];
+
+                    for(var i=0;i<data.length;i++){
+
+
+                        switch(data[i].jobStatus){
+                            case 'esriJobExecuting' :
+                                gp1.checkJobStatus(data[i].jobId,function(jobinfo){
+                                    //console.log(jobinfo);
+
+                                    if(jobinfo.jobStatus==JobInfo.STATUS_SUCCEEDED )//&& data[i].jobStatus =="esriJobExecuting"
+                                    {
+
+                                        gp1.getResultData(jobinfo.jobId,"out_img",function (datat){
+
+                                            f1(jobinfo.jobId,jobinfo.jobStatus,datat.value.url);//当为成功的时候，开始更改后台数据库状态为JobInfo.STATUS_SUCCEEDED
+                                        })
+                                    }
+
+                                    if(jobinfo.jobStatus==JobInfo.STATUS_FAILED){
+                                            f1(jobinfo.jobId,jobinfo.jobStatus,null);//当为失败的时候，开始更改后台数据库状态为JobInfo.Failed
+                                    }
+
+                                })
+
+                                break;
+                            case 'esriJobSucceeded':
+
+                                completeupdate(data[i].jobId);//后台将状态改为"extractedStart"
+
+                                break;
+                            case 'esriJobFailed':
+
+                                break;
+                            case 'extractedStart':
+                                break;
+                            case 'extractedSuccess' :
+                                break;
+                        }
+//                        if(data[i].jobStatus=="extractedSuccess"){
+//                            //什么也不干，说明这个任务全部完成
+//                            //st="数据提取成功"
+//                        }
+//                        else{
+//
+//                            if(data[i].jobStatus==JobInfo.STATUS_SUCCEEDED){//裁剪成功，发起ajax请求转移数据
+//                                completeupdate(data[i].jobId);//后台将状态改为"extractedStart"
+//                                st="影像裁剪完成"
+//                            }else{
+//                                //获得该ID的GP服务运行状况，并修改
+//
+//                                if (data[i].jobStatus =="esriJobExecuting"){
+//
+//                                    gp1.checkJobStatus(data[i].jobId,function(jobinfo){
+//                                        //console.log(jobinfo);
+////                                    if(jobinfo.jobStatus==JobInfo.STATUS_EXECUTING){
+////                                        st="影像正在裁剪中"
+////                                    }
+////                                    if(jobinfo.jobStatus==JobInfo.STATUS_TIMED_OUT){
+////                                        st="任务超时"
+////                                    }
+////                                    if(jobinfo.jobStatus==JobInfo.STATUS_FAILED){
+////                                        st="任务失败"
+////                                    }
+//
+//                                        if(jobinfo.jobStatus==JobInfo.STATUS_SUCCEEDED )//&& data[i].jobStatus =="esriJobExecuting"
+//                                        {
+//
+//                                            gp1.getResultData(jobinfo.jobId,"out_img",function (datat){
+//
+//                                                f1(jobinfo.jobId,jobinfo.jobStatus,datat.value.url);//当为成功的时候，开始更改后台数据库状态为JobInfo.STATUS_SUCCEEDED
+//                                            })
+//                                        }
+//                                    })
+//
+//                                }
+//
+//                            }
+//                        }
+                        //var download="http://192.168.0.251:82:8082/GF1/20160808/GF1_PMS1_E131.7_N46.1_20160808_L1A0001929940.jpg";//data[i].jobDownload
+                        console.log(data[i].jobId);
+                        var str;
+                        if(data[i].jobStatus=="extractedSuccess"){
+                            str="完成";
+                            link="<a href=\'"+data[i].jobDownload+"\'>"+"下载"+"<\/a>";
+                        }else{
+                            if(data[i].jobStatus=="esriJobFailed"){
+                                str="失败";
+                            }else{
+                                str="处理中";
+                            }
+                            link="<a>"+"空"+"<\/a>";
+                        }
+                        var jobtype;
+                        if(isNaN(data[i].jobId)){
+                            jobtype="影像裁剪"
+                        }else{
+                            jobtype="导出图幅"
+                        }
+
+                         locate[i]="<button id=\""+data[i].jobId +"\"  onclick=\""+"geolocation(this)"+"\">定位<\/button>";
+                        time=moment(data[i].jobTime).format('YYYY-MM-DD HH:mm:ss');
+                        table.row.add([data[i].jobName,jobtype,time,str,link,locate[i],data[i].jobPurpose,"无"]).draw();
+                    }
+
+                }
+            })
+        }
+
+        ///上传shp,贴图shp函数
+        var example1;
+
+        function f3(){
+            timeoutProcess = window.setInterval(f4, 2000);//1000为1秒钟
+
+        }
+
+        function f4(){
+            var obj = document.getElementById("myIframe").contentWindow;
+            var json = obj.document.body.innerText;
+
+            var json2 = (new Function("", "return " + json))();
+            //console.log(json2);
+            //if(json2.errors){console.log("errors!!!!!")}
+            //console.log(json.indexOf("]}") );
+            toastr.success('shp文件正在加载');
+            if (json2.errors) {
+                toastr.success('shp文件解析错误，请选择包含shape所有相关文件的.zip文件');
+                window.clearInterval(timeoutProcess);
+            }else{
+                toastr.success('shp文件加载成功');
+                f5();
+                window.clearInterval(timeoutProcess);
+            }
+        }
+
+        function f5() {
+            var obj = document.getElementById("myIframe").contentWindow;
+            var json_str = obj.document.body.innerText;
+            //console.log(json);
+
+            var json = (new Function("", "return " + json_str))();
+            if(json){
+                graphicsLayer.clear();
+                //console.log(JSON1);
+                var p={"rings":json.features[0].geometry.coordinates,"spatialReference":{"wkid":4326}}
+                var poly=new Polygon(p);
+                //var extent=poly.getExtent()
+                graphic = new Graphic(poly, symbol);
+                graphicsLayer.add(graphic);
+                map.setExtent(poly.getExtent().expand(2));
+            }
+
+        }
+
+        trigger();
+
+        //利用高德地位定位函数，并做默认10公里的缓冲区
+
+        var geomap;
+        //加载地图，调用浏览器定位服务
+
+        geomap = new AMap.Map('container', {
+            resizeEnable: true
+        });
+        geomap.plugin('AMap.Geolocation', function() {
+           var geolocation1 = new AMap.Geolocation({
+                enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+                buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                zoomToAccuracy: true,      //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+                buttonPosition:'RB'
+            });
+            //console.log(geolocation1)
+            //geomap.addControl(geolocation);
+            geolocation1.getCurrentPosition();
+            AMap.event.addListener(geolocation1, 'complete', onComplete);//返回定位信息
+            AMap.event.addListener(geolocation1, 'error', onError);      //返回定位出错信息
+        });
+        //解析定位结果
+        function onComplete(data) {
+
+            var pictureMarkerSymbol = new PictureMarkerSymbol('/theme/base/images/position.png', 25, 25);
+
+            var gcj02towgs84 = coordtransform.gcj02towgs84(data.position.lng, data.position.lat);
+
+            var point=new Point(gcj02towgs84,new SpatialReference({ wkid:4326 }));
+            var graphic=new Graphic(point, pictureMarkerSymbol);
+            map.centerAt(point);
+            map.graphics.add(graphic);
+            map.addLayer(gSheetLayer);
+
+            doBuffer(point);
+            console.log(data)
+
+        }
+        //解析定位错误信息
+        function onError(data) {
+            //document.getElementById('tip').innerHTML = '定位失败';
+            toastr.warning("该PC端无法获取高精度定位");
+        }
+
+        function doBuffer(PointObj) {
+            var geometry = PointObj;
+
+            //var graphic = new Graphic(geometry, symbol);
+            //map.graphics.add(graphic);
+
+            //setup the buffer parameters
+            var params = new BufferParameters();
+            params.distances = [ 10 ];
+            params.outSpatialReference = map.spatialReference;
+            params.unit =GeometryService.UNIT_KILOMETER;
+            //normalize the geometry
+
+            normalizeUtils.normalizeCentralMeridian([geometry]).then(function(normalizedGeometries){
+                var normalizedGeometry = normalizedGeometries[0];
+                if (normalizedGeometry.type === "polygon") {
+                    //if geometry is a polygon then simplify polygon.  This will make the user drawn polygon topologically correct.
+                    esriConfig.defaults.geometryService.simplify([normalizedGeometry], function(geometries) {
+                        params.geometries = geometries;
+                        esriConfig.defaults.geometryService.buffer(params, showBuffer);
+                    });
+                } else {
+                    params.geometries = [normalizedGeometry];
+                    esriConfig.defaults.geometryService.buffer(params, showBuffer);
+                }
+
+            });
+        }
+        
+        function showBuffer(bufferedGeometries) {
+            var symbol = new SimpleFillSymbol(
+                    SimpleFillSymbol.STYLE_SOLID,
+                    new SimpleLineSymbol(
+                            SimpleLineSymbol.STYLE_SOLID,
+                            new Color([0,255,0,0.65]), 2
+                    ),
+                    new Color([0,255,0,0.05])
+            );
+
+            array.forEach(bufferedGeometries, function(geometry) {
+                var e=geometry.getExtent();
+                //console.log(extent);
+                console.log(e)
+                var polyjson={rings:[[[e.xmin,e.ymin],[e.xmax,e.ymin],[e.xmax,e.ymax],[e.xmin,e.ymax],[e.xmin,e.ymin]]],"spatialReference":{"wkid":102100 }}
+                var geo=new Polygon(polyjson)
+                var graphic = new Graphic(geo, symbol);
+                graphicsLayer.add(graphic);
+                map.setExtent(e.expand(2))
+            });
+        }
+
+
+    });
+
+
+//dojo 外部函数，加载shp提示
+    function f2() {
+        if(document.getElementById('upload').value){
+            document.getElementById("convert").click();
+        }
+    }
+
+$("#esricdBar").delegate("button[data-rel-panel]", "click", function(e){
+    var $btn = $(e.currentTarget);
+    var $panel = $("#" + $(e.currentTarget).attr("data-rel-panel") );
+    if( $btn.hasClass("active") ){
+        //当前是被按下状态，需要弹起，且关闭panel
+        $btn.removeClass("active");
+        $panel.hide(100);
+    }else{
+        //先弹起所有的按钮
+        $(".navbar button[data-rel-panel]").removeClass("active");
+        $(".navbar div[data-rel-btn]").hide();
+        //当前是弹起状态，需要按下，且打开panel
+        $btn.addClass("active");
+        $panel.show(100);
+    }
+
+});
+    function panHide(value){
+        $("#"+value.name+"Panel").hide(100);
+        $("#"+value.name+"Btn").removeClass("active");
+    }
+
+var mapH = $("body").height() - $("#mapDiv").position().top;
+$("#mapDiv, .esricd-panel").height(mapH);
+
+$(window).resize(function() {
+    var mapH = $("body").height() - $("#mapDiv").position().top;
+    $("#mapDiv, .esricd-panel").height(mapH);
+});
+</script>
+
+</body>
+</html>
